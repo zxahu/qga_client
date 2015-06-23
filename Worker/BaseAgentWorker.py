@@ -4,7 +4,6 @@ import base64
 #from libs.QGASocket import QGASocket as QGA
 from libs.QGASocket import QGACommandLine as QGA
 
-
 class BaseAgentWorker(object):
 
     CRITICAL = 50
@@ -19,15 +18,22 @@ class BaseAgentWorker(object):
     Priority = 20
     Message = {}
     Timestamp = 0
+    #Change = false
+    uuid = None
+    image =None
 
     Connection = None
     #the exit signals
     Exit = False
 
-    def __init__(self, host, filename=None):
+    def __init__(self, host, filename=None,uuid=None,image=None):
+
         self.Host = host
         self.Guest = os.path.split(filename)[-1]
         self.Name = self.__class__.__name__
+        self.uuid = uuid
+        self.image = image
+
 
     def __del__(self):
         pass
@@ -38,6 +44,9 @@ class BaseAgentWorker(object):
     def time(self):
         return time.time()
 
+    def analysis(self):
+        pass
+
     def exit(self):
         self.Exit = True
 
@@ -47,11 +56,13 @@ class BaseQGAAgentWorker(BaseAgentWorker):
     socketFile = None
     _die_time = 0
 
-    def __init__(self, host, filename=None):
+    def __init__(self, host, filename=None,uuid=None,image=None):
         self.Host = host
         self.Guest = os.path.split(filename)[-1]
-
         self.socketFile = filename
+        self.uuid = uuid
+        self.image = image
+        self.Message['content'] =""
         self.connect()
 
     def __del__(self):

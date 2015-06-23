@@ -52,18 +52,23 @@ class Collection(BaseDispatcher):
         self.logger.setLevel(logging.DEBUG)
         
     def save(self, agentWorker):
-        content = {
-            "timestamp": agentWorker.Timestamp,
-            "host" : agentWorker.Host,
-            "guest" : agentWorker.Guest,
-            "priority" : agentWorker.Priority,
-            "message"  : agentWorker.Message
-        }
-        qga_message = json.dumps(content)
-        try:
-            self.channel.basic_publish(exchange='',
-                routing_key=self.Queue,
-                body=qga_message, 
-		properties=pika.BasicProperties(delivery_mode = 2,))
-        except :
-            self.logger.error("send message to rabbitmq-server failed  "+ qga_message)
+        if agentWorker.Change == True:
+            content = {
+                "timestamp": agentWorker.Timestamp,
+                "host" : agentWorker.Host,
+                "guest" : agentWorker.Guest,
+                "priority" : agentWorker.Priority,
+                "message"  : agentWorker.Message,
+                "uuid": agentWorker.uuid,
+                "image":agentWorker.image
+            }
+
+            qga_message = json.dumps(content)
+            try:
+                self.channel.basic_publish(exchange='',
+                    routing_key=self.Queue,
+                    body=qga_message,
+            properties=pika.BasicProperties(delivery_mode = 2,))
+            except :
+                self.logger.error("send message to rabbitmq-server failed  "+ qga_message)
+

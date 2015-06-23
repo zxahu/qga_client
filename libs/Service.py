@@ -1,7 +1,6 @@
 import gevent
 from gevent import Greenlet
 
-
 class LongPollingService(Greenlet):
 
     InstancePool = []
@@ -19,8 +18,11 @@ class LongPollingService(Greenlet):
             for agentWorker in self.InstancePool:
                 # update
                 agentWorker.update()
+                if agentWorker.Priority != 20:
+                    agentWorker.analysis()
                 #save log
-                self.log(agentWorker)
+                if agentWorker.Change == True:
+                    self.log(agentWorker)
 
                 # remove from list, if exit signal enabled
                 if agentWorker.Exit:
@@ -38,3 +40,4 @@ class LongPollingService(Greenlet):
 
     def setLogger(self, handle):
         self.Logger = handle
+

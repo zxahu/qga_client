@@ -2,10 +2,12 @@ import os
 from Worker import *
 from libs.Service import LongPollingService
 from libs.Configuration import Configuration
+from OpenStack.OpenStack import OpenStack
 from optparse import OptionParser
 import gevent
 import os.path
 import time
+import GLOBAL
 
 parser = OptionParser()
 parser.add_option("-d", "--fork", dest="fork",
@@ -17,12 +19,16 @@ parser.add_option("-f", "--conf",
 (options, args) = parser.parse_args()
 
 CFG = Configuration(options.conf)
+OpenStack = OpenStack()
+
 
 def getAllQGA():
     socketPath = CFG.getOption("qga", "path")
     socket = set()
 
     for filename in os.listdir(socketPath):
+        if 'org.qemu.guest_agent.0' not in filename:
+            continue
         filename = os.path.join(socketPath , filename)
         #When vm starting, the QGA can't access normally. So wait 5min for QGA agent launched.
         if os.path.getmtime(filename) > time.time() - 300: continue
@@ -35,7 +41,9 @@ def getAllQGA():
 
 def buildWorker(indication, hostname, filename):
     obj =  eval(indication)
-    return obj(hostname,filename)
+    uuid = OpenStack.get_uuid(filename)
+    image = OpenStack.get_os(uuid)
+    return obj(hostname,filename,uuid,image)
 
 def getLogger():
     type = CFG.getOption("qga", "logger")
